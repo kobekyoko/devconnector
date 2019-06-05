@@ -1,120 +1,85 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const express = require("express");
+const router = express.Router();
+const auth = require("../../middleware/auth");
+const { check, validationResult } = require("express-validator/check");
 
-// Create Schema
-const ProfileSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "users"
-  },
-  handle: {
-    type: String,
-    required: true,
-    max: 40
-  },
-  company: {
-    type: String
-  },
-  website: {
-    type: String
-  },
-  location: {
-    type: String
-  },
-  status: {
-    type: String,
-    required: true
-  },
-  skills: {
-    type: [String],
-    required: true
-  },
-  bio: {
-    type: String
-  },
-  githubusername: {
-    type: String
-  },
-  experience: [
-    {
-      title: {
-        type: String,
-        required: true
-      },
-      company: {
-        type: String,
-        required: true
-      },
-      location: {
-        type: String
-      },
-      from: {
-        type: Date,
-        required: true
-      },
-      to: {
-        type: Date
-      },
-      current: {
-        type: Boolean,
-        default: false
-      },
-      description: {
-        type: String
-      }
+const Profile = require("../../models/Profile");
+const User = require("../../models/User");
+
+// @route  GET api/profile/me
+// @desc   Get current uers profile
+// @access Private
+router.get("/me", auth, async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ user: req.user.id }).populate(
+      "user",
+      ["name", "avatar"]
+    );
+
+    if (!profile) {
+      return res.status(400).json({ msg: "There is no profile for this user" });
     }
-  ],
-  education: [
-    {
-      school: {
-        type: String,
-        required: true
-      },
-      degree: {
-        type: String,
-        required: true
-      },
-      fieldofstudy: {
-        type: String,
-        required: true
-      },
-      from: {
-        type: Date,
-        required: true
-      },
-      to: {
-        type: Date
-      },
-      current: {
-        type: Boolean,
-        default: false
-      },
-      description: {
-        type: String
-      }
-    }
-  ],
-  social: {
-    youtube: {
-      type: String
-    },
-    twitter: {
-      type: String
-    },
-    facebook: {
-      type: String
-    },
-    linkedin: {
-      type: String
-    },
-    instagram: {
-      type: String
-    }
-  },
-  date: {
-    type: Date,
-    default: Date.now
+
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
   }
 });
 
-module.exports = Profile = mongoose.model("profile", ProfileSchema);
+// @route  POST api/profile/me
+// @desc   Create or update user profile
+// @access Private
+router.post(
+  "/",
+  [
+    auth,
+    [
+      check("status", "Status is required")
+        .not()
+        .isEmpty(),
+      check("skills", "Skills are required")
+        .not()
+        .isEmpty()
+    ]
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ erros: errors.array() });
+    }
+    const {
+      company,
+      website,
+      location,
+      bio,
+      status,
+      githubusername,
+      skills,
+      youtube,
+      facebook,
+      twitter,
+      instagram,
+      linkedin
+    } = req.body;
+
+    //Build Profile Object
+    const profileFields = {};
+    profileFields.user = req.user.id;
+    if (company) profileFields.company = company;
+    if (website) profileFields.website = website;
+    if (location) profileFields.location = location;
+    if (bio) profileFields.company = bio;
+    if (status) profileFields.status = status;
+    if (githubusername) profileFields.githubusername = githubusername;
+    if (skills) {
+      profileFields.skills = skills.split(",").map(skill => skill.trim());
+    }
+
+    console.log(profileFields.Skills);
+
+    res.send("Hello");
+  }
+);
+
+module.exports = router;
