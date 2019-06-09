@@ -1,4 +1,4 @@
-# devconnectors2
+# devconnector2
 
 This is React/Redux Social Networking application, using Node.js (express) server. Database is MongoDB.
 
