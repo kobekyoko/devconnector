@@ -7,7 +7,6 @@ import Login from "./components/auth/Login";
 //Redux
 
 import { Provider } from "react-redux";
-//react-redux = combine React & Redux together
 import store from "./store";
 
 import "./App.css";
