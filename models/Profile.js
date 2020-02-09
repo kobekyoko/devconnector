@@ -9,7 +9,11 @@ const ProfileSchema = new Schema({
   },
   handle: {
     type: String,
+<<<<<<< HEAD
     required: false,
+=======
+    required: true,
+>>>>>>> eb072a5118c02b76a0b2a04c3cc1161def81c133
     max: 40
   },
   company: {
